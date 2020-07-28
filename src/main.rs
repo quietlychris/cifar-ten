@@ -1,5 +1,7 @@
 use ndarray::{prelude::*,stack};
 use image::*;
+use rand::prelude::*;
+use minifb::{Key, Window, WindowOptions, ScaleMode};
 
 use std::io;
 use std::io::prelude::*;
@@ -7,22 +9,27 @@ use std::fs::File;
 use std::error::Error;
 use std::path::Path;
 
-const SAVE_IMAGES: bool = false;
+const SHOW_IMAGES: bool = true;
+const BASE_PATH: &str = "data/";
+const CIFAR_DATA_PATH: &str = "cifar-10-batches-bin/";
+const IMAGES_PATH: &str = "images/";
 
 fn main() -> std::result::Result<(),Box<dyn Error>> {
 
-    let (train_data, train_labels) = get_train_data()?;
-    let (test_data, test_labels) = get_test_data()?;
+    let training_bin_paths = vec!["data_batch_1.bin","data_batch_2.bin","data_batch_3.bin","data_batch_4.bin","data_batch_5.bin"];
+    let (data, labels) = get_data(training_bin_paths, 50_000)?;
+    let test_bin_paths = vec!["test_batch.bin"];
+    let (test_data, test_labels) = get_data(test_bin_paths,10_000)?;
  
     Ok(())
 }
 
 #[inline]
 fn convert_to_image(array: Array3<u8>) -> RgbImage {
-    println!("- Converting to image!");
+    // println!("- Converting to image!");
     let mut img: RgbImage = ImageBuffer::new(32,32);
     let (d,w,h) = (array.shape()[0], array.shape()[1], array.shape()[2]);
-    println!("(d,w,h) = ({},{},{})",d,w,h);
+    // println!("(d,w,h) = ({},{},{})",d,w,h);
     for y in 0..h {
         for x in 0..w {
             let r = array[[2,x,y]];
@@ -35,15 +42,9 @@ fn convert_to_image(array: Array3<u8>) -> RgbImage {
     img
 }
 
-fn get_train_data() -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
-        // First, we're going to entirely read the training data set into an Array3<u8> structure
-    // of [50_000, 3, 32, 32]
-    let base_path = "data/";
-    let cifar_data_path = "cifar-10-batches-bin/";
-    let cifar_bin_path = vec!["data_batch_1.bin","data_batch_2.bin","data_batch_3.bin","data_batch_4.bin","data_batch_5.bin",];
+fn get_data(bin_paths: Vec<&str>,num_records: usize) -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
 
-    let images_path = "images/";
-    if Path::new(&[base_path,images_path].join("")).exists() == true {
+    if Path::new(&[BASE_PATH,IMAGES_PATH].join("")).exists() == true {
         std::fs::remove_dir_all("data/images/")?;
     } 
     else {
@@ -51,8 +52,8 @@ fn get_train_data() -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
     }
 
     let mut buffer: Vec<u8> = Vec::new();
-    for bin in &cifar_bin_path {
-        let full_cifar_path = [base_path,cifar_data_path,bin].join("");
+    for bin in &bin_paths {
+        let full_cifar_path = [BASE_PATH,CIFAR_DATA_PATH,bin].join("");
         println!("{}",full_cifar_path);
     
         let mut f = File::open(full_cifar_path)?;
@@ -64,77 +65,63 @@ fn get_train_data() -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
     }
 
     println!("- Done parsing binary files to Vec<u8>");
-    let mut train_labels: Array2<u8> = Array2::zeros((50_000,10));
-    train_labels[[0,buffer[0] as usize]] = 1;
-    //let mut train_data: Array4<u8> = Array::zeros((50_000,3,32,32));
-    let mut train_data: Array4<u8> = Array::from_vec(buffer[1..=3072].to_vec()).into_shape((1,3,32,32))?;
-    
-    for num in 1..50_000 {
-        println!("Through training image #{}",num);
-        let base = num*(3073);
-        let label = buffer[base];
-        if label < 0 || label > 9 {
-            panic!(format!("Label is {}, which is inconsistent with the CIFAR-10 scheme",label));
-        }
-        // println!("Label is: {}",label);
-        train_labels[[num,label as usize]] = 1;
-
-        // train_data.slice_mut(s![num, .., .., ..]) = Array::from_shape_vec((3,32,32), buffer[base+1..=base+3072].to_vec())?.view_mut(); // Doesn't compile
-        train_data = stack(Axis(0),&[train_data.view(),Array::from_vec(buffer[base+1..=base+3072].to_vec()).into_shape((1,3,32,32))?.view()])?;
-        // println!("array shape: {:?}",train_data.dim());
-        if SAVE_IMAGES == true {
-            let img = convert_to_image(train_data.slice(s!(num, .., .., ..)).to_owned());
-            let image_name = ["data/images/image_",num.to_string().as_str(),".png"].join("");
-            img.save(image_name)?;
-        }
-    }
-
-    Ok((train_data, train_labels))
-}
-
-fn get_test_data() -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
-    // First, we're going to entirely read the training data set into an Array3<u8> structure
-    // of [10_000, 3, 32, 32]
-    let base_path = "data/";
-    let cifar_data_path = "cifar-10-batches-bin/";
-    let bin = "test_batch.bin";
-
-    let images_path = "images/";
-    if Path::new(&[base_path,images_path].join("")).exists() == true {
-        std::fs::remove_dir_all("data/images/")?;
-    } 
-    else {
-        std::fs::create_dir("data/images/")?;
-    }
-
-    let mut buffer: Vec<u8> = Vec::new();
-    let full_cifar_path = [base_path,cifar_data_path,bin].join("");
-    println!("{}",full_cifar_path);
-    let mut f = File::open(full_cifar_path)?;
-
-    f.read_to_end(&mut buffer)?;
-    println!("- Done parsing binary files to Vec<u8>");
-    let mut labels: Array2<u8> = Array2::zeros((10_000,10));
+    let mut labels: Array2<u8> = Array2::zeros((num_records,10));
     labels[[0,buffer[0] as usize]] = 1;
-    let mut data: Array4<u8> = Array::from_vec(buffer[1..=3072].to_vec()).into_shape((1,3,32,32))?;
+    let mut data: Vec<u8> = Vec::with_capacity(num_records*3072);
 
-    for num in 1..10_000 {
+    for num in 0..num_records {
+        println!("Through image #{}/{}",num,num_records);
         let base = num*(3073);
         let label = buffer[base];
         if label < 0 || label > 9 {
             panic!(format!("Label is {}, which is inconsistent with the CIFAR-10 scheme",label));
         }
-        // println!("Label is: {}",label);
         labels[[num,label as usize]] = 1;
+        data.extend(&buffer[base+1..=base+3072]);
+    }
+    println!("data.len = {}, / 3072 = {}, remainder from /3072 = {}",data.len(), data.len() / 3072, data.len() % 3072);
+    let mut data: Array4<u8> = Array::from_vec(data).into_shape((num_records,3,32,32))?;
 
-        data = stack(Axis(0),&[data.view(),Array::from_vec(buffer[base+1..=base+3072].to_vec()).into_shape((1,3,32,32))?.view()])?;
-        // println!("array shape: {:?}",data.dim());
-        if SAVE_IMAGES == true {
-            let img = convert_to_image(data.slice(s!(num, .., .., ..)).to_owned());
-            let image_name = ["data/images/image_",num.to_string().as_str(),".png"].join("");
-            img.save(image_name)?;
-        }
+    let mut rng = rand::thread_rng();
+    let mut num: usize= rng.gen_range(0,num_records);
+    if SHOW_IMAGES == true {
+        // let img = convert_to_image(data.slice(s!(num, .., .., ..)).to_owned());
+        // let image_name = ["data/images/image_",num.to_string().as_str(),".png"].join("");
+        // img.save(image_name)?;
+        
+        // Displaying in minifb window instead of saving as a .png
+        let img_vec = data.slice(s!(num, .., .., ..)).into_shape((3072))?.to_vec().iter().map(|x| *x as u32).collect();
+        println!("Data label: {}",labels.slice(s![num, ..]));
+        display_img(img_vec);
+
     }
 
     Ok((data, labels))
+}
+
+fn display_img(mut buffer: Vec<u32>) {
+    let (window_width, window_height) = (600, 600);
+    let mut window = Window::new(
+        "Test - ESC to exit",
+        window_width,
+        window_height,
+        WindowOptions {
+            resize: true,
+            scale_mode: ScaleMode::Center,
+            ..WindowOptions::default()
+        },
+    )
+    .unwrap_or_else(|e| {
+        panic!("{}", e);
+    });
+
+    // Limit to max ~60 fps update rate
+    window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
+
+    while window.is_open() && !window.is_key_down(Key::Escape) && !window.is_key_down(Key::Q) {
+        // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
+        window
+            .update_with_buffer(&buffer, 32, 32)
+            .unwrap();
+    }
 }
