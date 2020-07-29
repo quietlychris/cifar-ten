@@ -1,4 +1,4 @@
-use ndarray::{prelude::*,stack};
+use ndarray::{prelude::*};
 use image::*;
 use rand::prelude::*;
 use minifb::{Key, Window, WindowOptions, ScaleMode};
@@ -85,13 +85,18 @@ fn get_data(bin_paths: Vec<&str>,num_records: usize) -> Result<(Array4<u8>, Arra
     let mut rng = rand::thread_rng();
     let mut num: usize= rng.gen_range(0,num_records);
     if SHOW_IMAGES == true {
-        // let img = convert_to_image(data.slice(s!(num, .., .., ..)).to_owned());
-        // let image_name = ["data/images/image_",num.to_string().as_str(),".png"].join("");
-        // img.save(image_name)?;
-        
         // Displaying in minifb window instead of saving as a .png
-        let img_vec = data.slice(s!(num, .., .., ..)).into_shape((3072))?.to_vec().iter().map(|x| *x as u32).collect();
-        println!("Data label: {}",labels.slice(s![num, ..]));
+        let img_arr = data.slice(s!(num, .., .., ..));
+        let mut img_vec: Vec<u32> = Vec::with_capacity(32 * 32);
+        let (w,h) = (32,32);
+        for y in 0..h {
+            for x in 0..w {
+                let temp: [u8; 4] = [img_arr[[2,y,x]], img_arr[[1,y,x]], img_arr[[0,y,x]], 255u8];
+                println!("temp: {:?}",temp);
+                img_vec.push(u32::from_le_bytes(temp));
+            }
+        }
+        println!( "Data label: {}",return_label_from_one_hot( labels.slice(s![num, ..]).to_owned() ) );
         display_img(img_vec);
 
     }
@@ -124,4 +129,32 @@ fn display_img(mut buffer: Vec<u32>) {
             .update_with_buffer(&buffer, 32, 32)
             .unwrap();
     }
+}
+
+fn return_label_from_one_hot(one_hot: Array1<u8>) -> String {
+
+    if one_hot == array![1,0,0,0,0,0,0,0,0,0] {
+        "airplane".to_string()
+    } else if one_hot == array![0,1,0,0,0,0,0,0,0,0] {
+        "automobile".to_string()
+    } else if one_hot == array![0,0,1,0,0,0,0,0,0,0] {
+        "bird".to_string()
+    } else if one_hot == array![0,0,0,1,0,0,0,0,0,0] {
+        "cat".to_string()
+    } else if one_hot == array![0,0,0,0,1,0,0,0,0,0] {
+        "deer".to_string()
+    } else if one_hot == array![0,0,0,0,0,1,0,0,0,0] {
+        "dog".to_string()
+    } else if one_hot == array![0,0,0,0,0,0,1,0,0,0] {
+        "frog".to_string()
+    } else if one_hot == array![0,0,0,0,0,0,0,1,0,0] {
+        "horse".to_string()
+    } else if one_hot == array![0,0,0,0,0,0,0,0,1,0] {
+        "ship".to_string()
+    } else if one_hot == array![0,0,0,0,0,0,0,0,0,1] {
+        "truck".to_string()
+    } else {
+        format!("Error: no valid label could be assigned to {}",one_hot).to_string()
+    }
+
 }
