@@ -83,10 +83,10 @@ impl<'a> Cifar10<'a> {
         self
     }
 
-    pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> { 
+    pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
         // println!("{:?}",self);
-        let (train_data, train_labels) = get_data(&self,"train")?;
-        let (test_data, test_labels) = get_data(&self,"test")?;
+        let (train_data, train_labels) = get_data(&self, "train")?;
+        let (test_data, test_labels) = get_data(&self, "test")?;
 
         Ok((train_data, train_labels, test_data, test_labels))
     }
@@ -110,17 +110,13 @@ fn convert_to_image(array: Array3<u8>) -> RgbImage {
     img
 }
 
-fn get_data(
-    config: &Cifar10,
-    dataset: &str
-) -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
-    
+fn get_data(config: &Cifar10, dataset: &str) -> Result<(Array4<u8>, Array2<u8>), Box<dyn Error>> {
     let mut buffer: Vec<u8> = Vec::new();
 
     let (bin_paths, num_records) = match dataset {
         "train" => (config.training_bin_paths.clone(), config.num_records_train),
         "test" => (config.testing_bin_paths.clone(), config.num_records_test),
-        _ => panic!("An unexpected value was passed for which dataset should be parsed")
+        _ => panic!("An unexpected value was passed for which dataset should be parsed"),
     };
 
     for bin in &bin_paths {
@@ -133,7 +129,10 @@ fn get_data(
         let mut temp_buffer: Vec<u8> = Vec::new();
         f.read_to_end(&mut temp_buffer)?;
         buffer.extend(&temp_buffer);
-        println!("{}",format!("- Done parsing binary file {} to Vec<u8>", bin).as_str());
+        println!(
+            "{}",
+            format!("- Done parsing binary file {} to Vec<u8>", bin).as_str()
+        );
     }
 
     println!("- Done parsing binary files to Vec<u8>");

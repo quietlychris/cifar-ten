@@ -4,7 +4,24 @@ Parses the binary files of the CIFAR-10 data set and returns them as a pair of t
 - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]` 
 - Testing data:  `Array4<u8> [10_000, 3, 32, 32]` and `Array2<u8> [10_000, 10]` 
 
-A random image from each dataset and the associated label is displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html).
+A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). 
+
+```rust
+use cifar::*;
+
+fn main() {
+    let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
+        .show_images(true)
+        .build()
+        .expect("Failed to build CIFAR-10 data");
+}
+```
+Note: At the moment, this also downloads the CIFAR-10 dataset included in this repostiory, which you'll also need to have an independent copy of in order to run. The uncompressed filesize is slightly under 200 MB. As a result, it may make more sense to close the repository itself locally, then add it's local path to your dependency list instead. 
+
+```toml
+[dependencies]
+cifar-10 = {git = "https://github.com/quietlychris/cifar-10", branch="master"}
+```
 
 #### Dependencies
 This depends on [`minifb`](https://github.com/emoon/rust_minifb) to display sample images, which means you may need to add it's dependencies via 
