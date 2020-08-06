@@ -90,6 +90,24 @@ impl<'a> Cifar10<'a> {
 
         Ok((train_data, train_labels, test_data, test_labels))
     }
+
+    pub fn build_as_flat_f32(self) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
+        
+        let (train_data, train_labels) = get_data(&self, "train")?;
+        let (test_data, test_labels) = get_data(&self, "test")?;
+        
+        let train_labels = train_labels.mapv(|x| x as f32);
+        let train_data = train_data
+            .into_shape((50_000, 32 * 32 * 3))?
+            .mapv(|x| x as f32 / 256.);
+        let test_labels = test_labels.mapv(|x| x as f32);
+        let test_data = test_data
+            .into_shape((10_000, 32 * 32 * 3))?
+            .mapv(|x| x as f32 / 256.);
+
+        Ok((train_data, train_labels, test_data, test_labels))
+
+    }
 }
 
 #[inline]
