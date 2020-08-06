@@ -83,12 +83,13 @@ impl<'a> Cifar10<'a> {
         self
     }
 
+
     pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
-        // println!("{:?}",self);
         let (train_data, train_labels) = get_data(&self, "train")?;
         let (test_data, test_labels) = get_data(&self, "test")?;
 
         Ok((train_data, train_labels, test_data, test_labels))
+
     }
 
     pub fn build_as_flat_f32(self) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
@@ -98,20 +99,20 @@ impl<'a> Cifar10<'a> {
         
         let train_labels = train_labels.mapv(|x| x as f32);
         let train_data = train_data
-            .into_shape((50_000, 32 * 32 * 3))?
+            .into_shape((self.num_records_train, 32 * 32 * 3))?
             .mapv(|x| x as f32 / 256.);
         let test_labels = test_labels.mapv(|x| x as f32);
         let test_data = test_data
-            .into_shape((10_000, 32 * 32 * 3))?
+            .into_shape((self.num_records_test, 32 * 32 * 3))?
             .mapv(|x| x as f32 / 256.);
 
         Ok((train_data, train_labels, test_data, test_labels))
-
     }
+    
 }
 
 #[inline]
-fn convert_to_image(array: Array3<u8>) -> RgbImage {
+fn convert_to_image( array: Array3<u8>) -> RgbImage {
     // println!("- Converting to image!");
     let mut img: RgbImage = ImageBuffer::new(32, 32);
     let (_d, w, h) = (array.shape()[0], array.shape()[1], array.shape()[2]);
