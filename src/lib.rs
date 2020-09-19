@@ -210,7 +210,7 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Array4<u8>, Array2<u8>),
         #[cfg(not(feature = "show"))]
         {
             println!("WARNING: Showing images disabled.");
-            println!("Please use the crates 'show' feature to enable it.");
+            println!("Please use the crate's 'show' feature to enable it.");
         }
     }
 
