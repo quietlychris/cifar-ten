@@ -29,7 +29,7 @@ cifar-10 = {git = "https://github.com/quietlychris/cifar-10", branch="master"}
 ```
 
 #### Dependencies
-This depends on [`minifb`](https://github.com/emoon/rust_minifb) to display sample images, which means you may need to add it's dependencies via 
+The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via 
 ```
 sudo apt install libxkbcommon-dev libwayland-cursor0 libwayland-dev
 ```
