@@ -2,9 +2,13 @@
 
 mod test;
 
+
+#[cfg(feature = "show")]
 use image::*;
+#[cfg(feature = "show")]
 use minifb::{Key, ScaleMode, Window, WindowOptions};
 use ndarray::prelude::*;
+#[cfg(feature = "show")]
 use rand::prelude::*;
 
 use std::error::Error;
@@ -111,7 +115,9 @@ impl<'a> Cifar10<'a> {
     
 }
 
+#[cfg(feature = "show")]
 #[inline]
+#[allow(clippy::many_single_char_names)]
 fn convert_to_image( array: Array3<u8>) -> RgbImage {
     // println!("- Converting to image!");
     let mut img: RgbImage = ImageBuffer::new(32, 32);
@@ -148,13 +154,13 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Array4<u8>, Array2<u8>),
         let mut temp_buffer: Vec<u8> = Vec::new();
         f.read_to_end(&mut temp_buffer)?;
         buffer.extend(&temp_buffer);
-        println!(
-            "{}",
-            format!("- Done parsing binary file {} to Vec<u8>", bin).as_str()
-        );
+        //println!(
+        //    "{}",
+        //    format!("- Done parsing binary file {} to Vec<u8>", bin).as_str()
+        //);
     }
 
-    println!("- Done parsing binary files to Vec<u8>");
+    //println!("- Done parsing binary files to Vec<u8>");
     let mut labels: Array2<u8> = Array2::zeros((num_records, 10));
     labels[[0, buffer[0] as usize]] = 1;
     let mut data: Vec<u8> = Vec::with_capacity(num_records * 3072);
@@ -174,35 +180,44 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Array4<u8>, Array2<u8>),
     }
     let data: Array4<u8> = Array::from_shape_vec((num_records, 3, 32, 32), data)?;
 
-    let mut rng = rand::thread_rng();
-    let num: usize = rng.gen_range(0, num_records);
-    if config.show_images == true {
-        // Displaying in minifb window instead of saving as a .png
-        let img_arr = data.slice(s!(num, .., .., ..));
-        let mut img_vec: Vec<u32> = Vec::with_capacity(32 * 32);
-        let (w, h) = (32, 32);
-        for y in 0..h {
-            for x in 0..w {
-                let temp: [u8; 4] = [
-                    img_arr[[2, y, x]],
-                    img_arr[[1, y, x]],
-                    img_arr[[0, y, x]],
-                    255u8,
-                ];
-                // println!("temp: {:?}", temp);
-                img_vec.push(u32::from_le_bytes(temp));
+    if config.show_images {
+        #[cfg(feature = "show")]
+        {
+            let mut rng = rand::thread_rng();
+            let num: usize = rng.gen_range(0, num_records);
+            // Displaying in minifb window instead of saving as a .png
+            let img_arr = data.slice(s!(num, .., .., ..));
+            let mut img_vec: Vec<u32> = Vec::with_capacity(32 * 32);
+            let (w, h) = (32, 32);
+            for y in 0..h {
+                for x in 0..w {
+                    let temp: [u8; 4] = [
+                        img_arr[[2, y, x]],
+                        img_arr[[1, y, x]],
+                        img_arr[[0, y, x]],
+                        255u8,
+                    ];
+                    // println!("temp: {:?}", temp);
+                    img_vec.push(u32::from_le_bytes(temp));
+                }
             }
+            println!(
+                "Data label: {}",
+                return_label_from_one_hot(labels.slice(s![num, ..]).to_owned())
+            );
+            display_img(img_vec);
         }
-        println!(
-            "Data label: {}",
-            return_label_from_one_hot(labels.slice(s![num, ..]).to_owned())
-        );
-        display_img(img_vec);
+        #[cfg(not(feature = "show"))]
+        {
+            println!("WARNING: Showing images disabled.");
+            println!("Please use the crate's 'show' feature to enable it.");
+        }
     }
 
     Ok((data, labels))
 }
 
+#[cfg(feature = "show")]
 fn display_img(buffer: Vec<u32>) {
     let (window_width, window_height) = (600, 600);
     let mut window = Window::new(
@@ -250,6 +265,6 @@ fn return_label_from_one_hot(one_hot: Array1<u8>) -> String {
     } else if one_hot == array![0, 0, 0, 0, 0, 0, 0, 0, 0, 1] {
         "truck".to_string()
     } else {
-        format!("Error: no valid label could be assigned to {}", one_hot).to_string()
+        format!("Error: no valid label could be assigned to {}", one_hot)
     }
 }

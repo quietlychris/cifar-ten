@@ -1,6 +1,6 @@
 [package]
 name = "cifar-10"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["chrism <christopher.and.moran@gmail.com>"]
 edition = "2018"
 
@@ -9,8 +9,14 @@ edition = "2018"
 [lib]
 name = "cifar_10"
 
+[features]
+default = []
+show = ["minifb", "image"]
+
 [dependencies]
 ndarray = "0.13"
-image = "0.23"
 rand = "0.7"
-minifb = "0.17"
+
+# Used to show datasets
+image = {version = "0.23", optional = true}
+minifb = {version = "0.17", optional = true}
