@@ -11,7 +11,7 @@ Parses the binary files of the CIFAR-10 data set and returns them as a pair of t
 A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). 
 
 ```rust
-use cifar::*;
+use cifar_ten::*;
 
 fn main() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
@@ -21,11 +21,15 @@ fn main() {
         .expect("Failed to build CIFAR-10 data");
 }
 ```
-Note: At the moment, this also downloads the CIFAR-10 dataset included in this repostiory, which you'll also need to have an independent copy of in order to run. The uncompressed filesize is slightly under 200 MB. As a result, it may make more sense to clone the repository itself locally, then add its local path to your dependency list instead. 
+To add as a dependency, please use:
 
 ```toml
 [dependencies]
-cifar-10 = {git = "https://github.com/quietlychris/cifar-10", branch="master"}
+cifar-ten = "0.1"
+```
+Note: Previous commits have included the dataset, which will make the download size large. For development, it's suggested to 
+```
+$ git clone --depth=1 https://github.com/quietlychris/cifar-ten.git
 ```
 
 #### Dependencies
