@@ -1,9 +1,12 @@
 [package]
 name = "cifar-ten"
 version = "0.1.0"
-authors = ["Christopher Moran <christopher.and.moran@gmail.com>",
-    "Manuel Drewald"]
+authors = [
+    "Christopher Moran <christopher.and.moran@gmail.com>",
+    "Manuel Drehwald"
+]
 edition = "2018"
+repository = "https://github.com/quietlychris/cifar-ten"
 readme = "README.md"
 license = "MIT"
 description = "Parses the CIFAR-10 dataset binary files, and returns them as a Rust ndarray tuple"
