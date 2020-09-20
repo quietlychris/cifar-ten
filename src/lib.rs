@@ -1,7 +1,34 @@
 #![allow(dead_code)]
 
-mod test;
+//! Parses the binary files of the CIFAR-10 data set and returns them as a pair of tuples `(data, labels)` with of type and dimension:
+//! - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]` 
+//! - Testing data:  `Array4<u8> [10_000, 3, 32, 32]` and `Array2<u8> [10_000, 10]` 
+//!
+//! **OR** 
+//! 
+//! - as a set of flattened `Array2<f32>` structures in the same arrangement. 
+//!
+//! A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). 
+//!
+//! ```rust
+//! use cifar_10::*;
+//!
+//! fn main() {
+//!     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
+//!         .show_images(true)
+//!         .build()
+//!         // or .build_as_flat_f32()
+//!         .expect("Failed to build CIFAR-10 data");
+//! }
+//! ```
+//! 
+//! #### Dependencies
+//! The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via 
+//! ```
+//! sudo apt install libxkbcommon-dev libwayland-cursor0 libwayland-dev
+//! ```
 
+mod test;
 
 #[cfg(feature = "show")]
 use image::*;
@@ -15,6 +42,7 @@ use std::error::Error;
 use std::fs::File;
 use std::io::prelude::*;
 
+/// Data structure used to specify where/how the CIFAR-10 binary data is parsed
 #[derive(Debug)]
 pub struct Cifar10<'a> {
     base_path: &'a str,
@@ -28,6 +56,8 @@ pub struct Cifar10<'a> {
 }
 
 impl<'a> Cifar10<'a> {
+
+    /// Returns the default struct, looking in the "./data/" directory with default binary names
     pub fn default() -> Self {
         Cifar10 {
             base_path: "data/",
@@ -47,47 +77,55 @@ impl<'a> Cifar10<'a> {
         }
     }
 
+    /// Manually set the base path
     pub fn base_path(mut self, base_path: &'a str) -> Self {
         self.base_path = base_path;
         self
     }
 
+    /// Manually set the path for the CIFAR-10 data
     pub fn cifar_data_path(mut self, cifar_data_path: &'a str) -> Self {
         self.cifar_data_path = cifar_data_path;
         self
     }
 
+    /// If the `show` feature is enabled, create a window displaying the image
     pub fn show_images(mut self, show_images: bool) -> Self {
         self.show_images = show_images;
         self
     }
 
+    /// Choose if the `labels` return is in one-hot format or not (default yes)
     pub fn encode_one_hot(mut self, encode_one_hot: bool) -> Self {
         self.encode_one_hot = encode_one_hot;
         self
     }
 
+    /// Manually set the path to the training data binaries
     pub fn training_bin_paths(mut self, training_bin_paths: Vec<&'a str>) -> Self {
         self.training_bin_paths = training_bin_paths;
         self
     }
 
+    /// Manually set the path to the testing data binaries
     pub fn testing_bin_paths(mut self, testing_bin_paths: Vec<&'a str>) -> Self {
         self.testing_bin_paths = testing_bin_paths;
         self
     }
 
+    /// Set the number of records in the training set (default 50_000)
     pub fn num_records_train(mut self, num_records_train: usize) -> Self {
         self.num_records_train = num_records_train;
         self
     }
 
+    /// Set the number of records in the training set (default 10_000)
     pub fn num_records_test(mut self, num_records_test: usize) -> Self {
         self.num_records_test = num_records_test;
         self
     }
 
-
+    /// Returns the array tuple using the specified options in Array4/2<u8> form
     pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
         let (train_data, train_labels) = get_data(&self, "train")?;
         let (test_data, test_labels) = get_data(&self, "test")?;
@@ -96,6 +134,7 @@ impl<'a> Cifar10<'a> {
 
     }
 
+    /// Returns the array tuple using the specified options in Array2<f32> form
     pub fn build_as_flat_f32(self) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
         
         let (train_data, train_labels) = get_data(&self, "train")?;

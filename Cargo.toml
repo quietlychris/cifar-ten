@@ -1,13 +1,21 @@
 [package]
-name = "cifar-10"
-version = "0.1.1"
-authors = ["chrism <christopher.and.moran@gmail.com>"]
+name = "cifar-ten"
+version = "0.1.0"
+authors = ["Christopher Moran <christopher.and.moran@gmail.com>",
+    "Manuel Drewald"]
 edition = "2018"
+readme = "README.md"
+license = "MIT"
+description = "Parses the CIFAR-10 dataset binary files, and returns them as a Rust ndarray tuple"
+keywords = ["data", "machine", "learning", "cifar", "ten"]
+exclude = [
+    "data/*"
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "cifar_10"
+name = "cifar_ten"
 
 [features]
 default = []
