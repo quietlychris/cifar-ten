@@ -1,7 +1,11 @@
 #[allow(unused_imports)]
-use crate::*;
+
+use crate::Cifar10;
+
+// Both tests are commented out because the dataset is not included in the crate and there is not currently a `download` feature
 
 #[test]
+#[ignore]
 fn test_run() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .show_images(false)
@@ -10,6 +14,7 @@ fn test_run() {
 }
 
 #[test]
+#[ignore]
 fn test_flat_f32() {
 
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()

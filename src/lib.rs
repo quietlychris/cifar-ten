@@ -10,8 +10,8 @@
 //!
 //! A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). 
 //!
-//! ```rust
-//! use cifar_10::*;
+//! ```rust ignore
+//! use cifar_ten::*;
 //!
 //! fn main() {
 //!     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
@@ -24,7 +24,7 @@
 //! 
 //! #### Dependencies
 //! The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via 
-//! ```
+//! ```bash
 //! sudo apt install libxkbcommon-dev libwayland-cursor0 libwayland-dev
 //! ```
 
