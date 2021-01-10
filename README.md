@@ -29,7 +29,7 @@ To add as a dependency, please use:
 
 ```toml
 [dependencies]
-cifar-ten = "0.1"
+cifar-ten = "0.2"
 ```
 Note: Previous commits have included the dataset, which will make the download size large. For development, it's suggested to 
 ```
