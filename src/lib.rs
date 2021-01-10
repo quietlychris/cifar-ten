@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 
 //! Parses the binary files of the CIFAR-10 data set and returns them as a pair of tuples `(data, labels)` with of type and dimension:
-//! - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]` 
-//! - Testing data:  `Array4<u8> [10_000, 3, 32, 32]` and `Array2<u8> [10_000, 10]` 
+//! - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]`
+//! - Testing data:  `Array4<u8> [10_000, 3, 32, 32]` and `Array2<u8> [10_000, 10]`
 //!
-//! **OR** 
-//! 
-//! - as a set of flattened `Array2<f32>` structures in the same arrangement. 
+//! **OR**
 //!
-//! A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). 
+//! - as a set of flattened `Array2<f32>` structures in the same arrangement.
+//!
+//! A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html).
 //!
 //! ```rust ignore
 //! use cifar_ten::*;
@@ -21,14 +21,15 @@
 //!         .expect("Failed to build CIFAR-10 data");
 //! }
 //! ```
-//! 
+//!
 //! #### Dependencies
-//! The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via 
+//! The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via
 //! ```bash
 //! sudo apt install libxkbcommon-dev libwayland-cursor0 libwayland-dev
 //! ```
 
 mod test;
+use std::error::Error;
 
 #[cfg(feature = "show")]
 use image::*;
@@ -38,9 +39,14 @@ use ndarray::prelude::*;
 #[cfg(feature = "show")]
 use rand::prelude::*;
 
-use std::error::Error;
+#[cfg(feature = "download")]
 use std::fs::File;
-use std::io::prelude::*;
+#[cfg(feature = "download")]
+use std::io::Read;
+#[cfg(feature = "download")]
+use std::path::Path;
+#[cfg(feature = "download")]
+use tar::Archive;
 
 /// Data structure used to specify where/how the CIFAR-10 binary data is parsed
 #[derive(Debug)]
@@ -53,10 +59,10 @@ pub struct Cifar10<'a> {
     testing_bin_paths: Vec<&'a str>,
     num_records_train: usize,
     num_records_test: usize,
+    download_and_extract: bool,
 }
 
 impl<'a> Cifar10<'a> {
-
     /// Returns the default struct, looking in the "./data/" directory with default binary names
     pub fn default() -> Self {
         Cifar10 {
@@ -74,6 +80,7 @@ impl<'a> Cifar10<'a> {
             testing_bin_paths: vec!["test_batch.bin"],
             num_records_train: 50_000,
             num_records_test: 10_000,
+            download_and_extract: false,
         }
     }
 
@@ -86,6 +93,12 @@ impl<'a> Cifar10<'a> {
     /// Manually set the path for the CIFAR-10 data
     pub fn cifar_data_path(mut self, cifar_data_path: &'a str) -> Self {
         self.cifar_data_path = cifar_data_path;
+        self
+    }
+
+    /// Download CIFAR-10 dataset and extract from compressed tarball
+    pub fn download_and_extract(mut self, download_and_extract: bool) -> Self {
+        self.download_and_extract = download_and_extract;
         self
     }
 
@@ -127,19 +140,87 @@ impl<'a> Cifar10<'a> {
 
     /// Returns the array tuple using the specified options in Array4/2<u8> form
     pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
+        #[cfg(feature = "download")]
+        match self.download_and_extract {
+            false => (),
+            true => {
+                let url = "https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz";
+                self.download(url, "cifar-10-binary.tar.gz")?;
+                self.extract("cifar-10-binary.tar.gz")?;
+            }
+        }
+
         let (train_data, train_labels) = get_data(&self, "train")?;
         let (test_data, test_labels) = get_data(&self, "test")?;
 
         Ok((train_data, train_labels, test_data, test_labels))
+    }
 
+    #[cfg(feature = "download")]
+    fn download(&self, url: &str, archive_name: &str) -> Result<(), Box<dyn Error>> {
+        let download_dir = self.base_path;
+        if !Path::new(&download_dir).exists() {
+            std::fs::create_dir_all(&download_dir)
+                .or_else(|e| {
+                    Err(format!(
+                        "Failed to to create directory {:?}: {:?}",
+                        download_dir, e
+                    ))
+                })
+                .unwrap();
+        }
+
+        let archive = download_dir.to_owned() + archive_name;
+
+        if Path::new(&archive).exists() {
+            println!("  File {:?} already exists, skipping downloading.", archive);
+        } else {
+            println!("  Downloading {} to {:?}...", url, download_dir);
+            let f = std::fs::File::create(&archive)
+                .or_else(|e| Err(format!("Failed to create file {:?}: {:?}", archive, e)))
+                .unwrap();
+            let mut writer = std::io::BufWriter::new(f);
+            let mut response = reqwest::blocking::get(url)
+                .expect(format!("Failed to download {:?}", url).as_str());
+
+            let _ = std::io::copy(&mut response, &mut writer)
+                .or_else(|e| Err(format!("Failed to to write to file {:?}: {:?}", archive, e)))
+                .unwrap();
+            println!("  Downloading {} to {:?} done!", archive, download_dir);
+        }
+        Ok(())
+    }
+
+    #[cfg(feature = "download")]
+    fn extract(&self, archive_name: &str) -> Result<(), Box<dyn Error>> {
+        // And extract the contents
+        let download_dir = self.base_path;
+        let archive = download_dir.to_owned() + archive_name;
+
+        let extract_to = download_dir.to_owned() + "cifar-10-batches-bin";
+        if Path::new(&extract_to).exists() {
+            println!(
+                "  Extracted file {:?} already exists, skipping extraction.",
+                extract_to
+            );
+        } else {
+            println!("Beginning extraction of {} to {}", archive, extract_to);
+            use flate2::read::GzDecoder;
+            let tar_gz = File::open(archive)?;
+            let tar = GzDecoder::new(tar_gz);
+            let mut archive = Archive::new(tar);
+            archive.unpack(download_dir)?;
+        }
+        Ok(())
     }
 
     /// Returns the array tuple using the specified options in Array2<f32> form
-    pub fn build_as_flat_f32(self) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
-        
+    pub fn build_as_flat_f32(
+        self,
+    ) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
         let (train_data, train_labels) = get_data(&self, "train")?;
         let (test_data, test_labels) = get_data(&self, "test")?;
-        
+
         let train_labels = train_labels.mapv(|x| x as f32);
         let train_data = train_data
             .into_shape((self.num_records_train, 32 * 32 * 3))?
@@ -151,13 +232,12 @@ impl<'a> Cifar10<'a> {
 
         Ok((train_data, train_labels, test_data, test_labels))
     }
-    
 }
 
 #[cfg(feature = "show")]
 #[inline]
 #[allow(clippy::many_single_char_names)]
-fn convert_to_image( array: Array3<u8>) -> RgbImage {
+fn convert_to_image(array: Array3<u8>) -> RgbImage {
     // println!("- Converting to image!");
     let mut img: RgbImage = ImageBuffer::new(32, 32);
     let (_d, w, h) = (array.shape()[0], array.shape()[1], array.shape()[2]);

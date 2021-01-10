@@ -23,10 +23,17 @@ name = "cifar_ten"
 [features]
 default = []
 show = ["minifb", "image"]
+download = ["reqwest", "flate2", "tar"]
 
 [dependencies]
-ndarray = "0.13"
-rand = "0.7"
+ndarray = "0.14"
+rand = "0.8"
+
+# Used for downloading dataset
+reqwest = {version = "0.11", optional = true, features = ["blocking"]}
+# Used for extracting dataset from compressed format
+flate2 = {version = "1.0.2", optional = true, features = ["rust_backend"], default-features = false}
+tar = {version = "0.4", optional = true}
 
 # Used to show datasets
 image = {version = "0.23", optional = true}
