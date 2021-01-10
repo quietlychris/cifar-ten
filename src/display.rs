@@ -4,6 +4,7 @@ use ndarray::prelude::*;
 use show_image::{make_window_full, Event, WindowOptions};
 use std::error::Error;
 
+/// Display an image in a stand-alone window
 #[cfg(feature = "display")]
 pub fn display_img(img_arr: &Array3<u8>) -> Result<(), Box<dyn Error>> {
     let test_result_img = convert_to_image(img_arr);
@@ -50,31 +51,3 @@ fn convert_to_image(array: &Array3<u8>) -> RgbImage {
 
     img
 }
-
-/*
-#[cfg(feature = "display")]
-fn display_img(buffer: Vec<u32>) {
-    let (window_width, window_height) = (600, 600);
-    let mut window = Window::new(
-        "Test - ESC to exit",
-        window_width,
-        window_height,
-        WindowOptions {
-            resize: true,
-            scale_mode: ScaleMode::Center,
-            ..WindowOptions::default()
-        },
-    )
-    .unwrap_or_else(|e| {
-        panic!("{}", e);
-    });
-
-    // Limit to max ~60 fps update rate
-    window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
-
-    while window.is_open() && !window.is_key_down(Key::Escape) && !window.is_key_down(Key::Q) {
-        // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
-        window.update_with_buffer(&buffer, 32, 32).unwrap();
-    }
-}
-*/

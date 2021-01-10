@@ -153,6 +153,7 @@ impl<'a> Cifar10<'a> {
         Ok((train_data, train_labels, test_data, test_labels))
     }
 
+    /// Download the dataset from an online mirror 
     #[cfg(feature = "download")]
     fn download(&self, url: &str, archive_name: &str) -> Result<(), Box<dyn Error>> {
         let download_dir = self.base_path;
@@ -188,6 +189,7 @@ impl<'a> Cifar10<'a> {
         Ok(())
     }
 
+    /// Extracts the compressed dataset into a new directory
     #[cfg(feature = "download")]
     fn extract(&self, archive_name: &str) -> Result<(), Box<dyn Error>> {
         // And extract the contents
