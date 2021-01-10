@@ -22,7 +22,7 @@ name = "cifar_ten"
 
 [features]
 default = []
-show = ["minifb", "image"]
+display = ["show-image", "image"]
 download = ["reqwest", "flate2", "tar"]
 
 [dependencies]
@@ -37,4 +37,4 @@ tar = {version = "0.4", optional = true}
 
 # Used to show datasets
 image = {version = "0.23", optional = true}
-minifb = {version = "0.17", optional = true}
+show-image = {version = "0.6", features = ["image"], optional = true}

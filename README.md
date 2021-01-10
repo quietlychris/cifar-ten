@@ -1,4 +1,7 @@
-### CIFAR-10 Parser
+[![crates.io](https://img.shields.io/crates/v/cifar-ten.svg)](https://crates.io/crates/cifar-ten)
+[![Documentation](https://docs.rs/cifar-ten/badge.svg)](https://docs.rs/cifar-ten)
+
+### cifar-ten
 
 Parses the binary files of the CIFAR-10 data set and returns them as a pair of tuples `(data, labels)` with of type and dimension:
 - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]` 
@@ -16,6 +19,7 @@ use cifar_ten::*;
 fn main() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .show_images(true)
+        .download_and_extract(true)
         .build()
         // or .build_as_flat_f32()
         .expect("Failed to build CIFAR-10 data");
@@ -30,10 +34,4 @@ cifar-ten = "0.1"
 Note: Previous commits have included the dataset, which will make the download size large. For development, it's suggested to 
 ```
 $ git clone --depth=1 https://github.com/quietlychris/cifar-ten.git
-```
-
-#### Dependencies
-The crate's `show` feature uses the [`minifb`](https://github.com/emoon/rust_minifb) library to display sample images, which means you may need to add its dependencies via 
-```
-sudo apt install libxkbcommon-dev libwayland-cursor0 libwayland-dev
 ```
