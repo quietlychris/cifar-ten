@@ -1,14 +1,12 @@
 #![allow(dead_code)]
 
 //! Parses the binary files of the CIFAR-10 data set and returns them as a pair of tuples `(data, labels)` with of type and dimension:
-//! - Training data:  `Array4<u8> [50_000, 3, 32, 32]` and `Array2<u8> [50_000, 10]`
-//! - Testing data:  `Array4<u8> [10_000, 3, 32, 32]` and `Array2<u8> [10_000, 10]`
+//! - Training data:  `Array4<u8/f32> [50_000, 3, 32, 32]` and `Array2<u8/f32> [50_000, 10]`
+//! - Testing data:  `Array4<u8/f32> [10_000, 3, 32, 32]` and `Array2<u8/f32> [10_000, 10]`
 //!
-//! **OR**
-//!
-//! - as a set of flattened `Array2<f32>` structures in the same arrangement.
 //!
 //! A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html).
+//! or downloaded automatically using the `download` feature.
 //!
 //! ```rust ignore
 //! use cifar_ten::*;
@@ -17,8 +15,9 @@
 //!     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
 //!         .show_images(true)
 //!         .download_and_extract(true)
-//!         .build()
-//!         // or .build_as_flat_f32()
+//!         .normalize(true)
+//!         .build_f32()
+//!         // or .build_u8()
 //!         .expect("Failed to build CIFAR-10 data");
 //! }
 //! ```
@@ -56,7 +55,17 @@ pub struct Cifar10<'a> {
     testing_bin_paths: Vec<&'a str>,
     num_records_train: usize,
     num_records_test: usize,
+    as_f32: bool,
+    normalize: bool,
     download_and_extract: bool,
+}
+
+pub struct DataUint8(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>);
+pub struct DataFloat32(Array4<f32>, Array2<f32>, Array4<f32>, Array2<f32>);
+
+pub enum Either<DataUint8, DataFloat32> {
+    Left(DataUint8),
+    Right(DataFloat32),
 }
 
 impl<'a> Cifar10<'a> {
@@ -77,6 +86,8 @@ impl<'a> Cifar10<'a> {
             testing_bin_paths: vec!["test_batch.bin"],
             num_records_train: 50_000,
             num_records_test: 10_000,
+            as_f32: false,
+            normalize: false,
             download_and_extract: false,
         }
     }
@@ -135,25 +146,13 @@ impl<'a> Cifar10<'a> {
         self
     }
 
-    /// Returns the array tuple using the specified options in Array4/2<u8> form
-    pub fn build(self) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
-        #[cfg(feature = "download")]
-        match self.download_and_extract {
-            false => (),
-            true => {
-                let url = "https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz";
-                self.download(url, "cifar-10-binary.tar.gz")?;
-                self.extract("cifar-10-binary.tar.gz")?;
-            }
-        }
-
-        let (train_data, train_labels) = get_data(&self, "train")?;
-        let (test_data, test_labels) = get_data(&self, "test")?;
-
-        Ok((train_data, train_labels, test_data, test_labels))
+    // Return a matrix with f32 elements normalized across range [0..1]
+    pub fn normalize(mut self, normalize: bool) -> Self {
+        self.normalize = normalize;
+        self
     }
 
-    /// Download the dataset from an online mirror 
+    /// Download the dataset from an online mirror
     #[cfg(feature = "download")]
     fn download(&self, url: &str, archive_name: &str) -> Result<(), Box<dyn Error>> {
         let download_dir = self.base_path;
@@ -213,21 +212,58 @@ impl<'a> Cifar10<'a> {
         Ok(())
     }
 
-    /// Returns the array tuple using the specified options in Array2<f32> form
-    pub fn build_as_flat_f32(
+    /// Returns the array tuple using the specified options in Array4/2<u8> form
+    pub fn build_u8(
         self,
-    ) -> Result<(Array2<f32>, Array2<f32>, Array2<f32>, Array2<f32>), Box<dyn Error>> {
+    ) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
+        if self.normalize == true {
+            println!(
+                "Warning: the \"normalize\" option has been selected without as_f32 being true; returning standard <u8> matrices");
+        }
+
+        #[cfg(feature = "download")]
+        match self.download_and_extract {
+            false => (),
+            true => {
+                let url = "https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz";
+                self.download(url, "cifar-10-binary.tar.gz")?;
+                self.extract("cifar-10-binary.tar.gz")?;
+            }
+        }
+
         let (train_data, train_labels) = get_data(&self, "train")?;
         let (test_data, test_labels) = get_data(&self, "test")?;
 
+        Ok((train_data, train_labels, test_data, test_labels))
+    }
+
+    /// Returns the array tuple using the specified options in Array2<f32> form
+    pub fn build_f32(
+        self,
+    ) -> Result<(Array4<f32>, Array2<f32>, Array4<f32>, Array2<f32>), Box<dyn Error>> {
+        
+        #[cfg(feature = "download")]
+        match self.download_and_extract {
+            false => (),
+            true => {
+                let url = "https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz";
+                self.download(url, "cifar-10-binary.tar.gz")?;
+                self.extract("cifar-10-binary.tar.gz")?;
+            }
+        }
+
+        let (train_data, train_labels) = get_data(&self, "train")?;
+        let (test_data, test_labels) = get_data(&self, "test")?;
+
+        let mut train_data = train_data.mapv(|x| x as f32);
         let train_labels = train_labels.mapv(|x| x as f32);
-        let train_data = train_data
-            .into_shape((self.num_records_train, 32 * 32 * 3))?
-            .mapv(|x| x as f32 / 256.);
+        let mut test_data = test_data.mapv(|x| x as f32);
         let test_labels = test_labels.mapv(|x| x as f32);
-        let test_data = test_data
-            .into_shape((self.num_records_test, 32 * 32 * 3))?
-            .mapv(|x| x as f32 / 256.);
+
+        if self.normalize == true {
+            train_data = train_data.mapv(|x| x / 256.0);
+            test_data = test_data.mapv(|x| x / 256.0);
+        }
 
         Ok((train_data, train_labels, test_data, test_labels))
     }

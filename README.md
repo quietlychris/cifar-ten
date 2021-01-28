@@ -11,7 +11,7 @@ Parses the binary files of the CIFAR-10 data set and returns them as a pair of t
 
 - as a set of flattened `Array2<f32>` structures in the same arrangement. 
 
-A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). This can be download manually, or automatically using the `download` feature. 
+A random image from each dataset and the associated label can be displayed upon parsing. A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). This can be downloaded manually, or automatically using the `download` feature. 
 
 ```rust
 use cifar_ten::*;
