@@ -241,7 +241,6 @@ impl<'a> Cifar10<'a> {
     pub fn build_f32(
         self,
     ) -> Result<(Array4<f32>, Array2<f32>, Array4<f32>, Array2<f32>), Box<dyn Error>> {
-        
         #[cfg(feature = "download")]
         match self.download_and_extract {
             false => (),
