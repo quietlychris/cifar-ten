@@ -216,7 +216,7 @@ impl<'a> Cifar10<'a> {
     pub fn build_u8(
         self,
     ) -> Result<(Array4<u8>, Array2<u8>, Array4<u8>, Array2<u8>), Box<dyn Error>> {
-        if self.normalize == true {
+        if self.normalize {
             println!(
                 "Warning: the \"normalize\" option has been selected without as_f32 being true; returning standard <u8> matrices");
         }
@@ -260,7 +260,7 @@ impl<'a> Cifar10<'a> {
         let mut test_data = test_data.mapv(|x| x as f32);
         let test_labels = test_labels.mapv(|x| x as f32);
 
-        if self.normalize == true {
+        if self.normalize {
             train_data = train_data.mapv(|x| x / 256.0);
             test_data = test_data.mapv(|x| x / 256.0);
         }
@@ -304,10 +304,10 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Array4<u8>, Array2<u8>),
         let base = num * (3073);
         let label = buffer[base];
         if label > 9 {
-            panic!(format!(
+            panic!(
                 "Label is {}, which is inconsistent with the CIFAR-10 scheme",
                 label
-            ));
+            );
         }
         labels[[num, label as usize]] = 1;
         data.extend(&buffer[base + 1..=base + 3072]);
