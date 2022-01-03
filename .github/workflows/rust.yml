@@ -16,8 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install 
-      run: sudo apt install gcc-multilib
+    - name: Install SDL2
+      run: sudo apt install libsdl2-dev
     - name: Build basic
       run: cargo build --features download
     - name: Build with download feature
