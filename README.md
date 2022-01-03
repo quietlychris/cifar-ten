@@ -19,7 +19,7 @@ fn main() {
         .build()
         .unwrap()
         .to_ndarray::<f32>()
-         .expect("Failed to build CIFAR-10 data");
+        .expect("Failed to build CIFAR-10 data");
 }
 ```
  
