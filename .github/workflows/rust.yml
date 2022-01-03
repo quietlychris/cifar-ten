@@ -16,9 +16,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --features download 
+    - name: Build basic
+      run: cargo build --features download
+    - name: Build with download feature
+      run: cargo build --features=download,to_ndarray  
     - name: Run tests
-      run: cargo test --verbose --features download
-    - name: Run tests
+      run: cargo test --verbose --features=download,to_ndarray
+    - name: Build examples
       run: cargo build --examples --all --features=download,to_ndarray
