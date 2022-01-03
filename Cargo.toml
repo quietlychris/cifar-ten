@@ -22,19 +22,22 @@ name = "cifar_ten"
 
 [features]
 default = []
-display = ["show-image", "image"]
-download = ["reqwest", "flate2", "tar"]
+download = ["curl", "pbr", "flate2", "tar"]
+to_ndarray = ["ndarray"]
 
 [dependencies]
-ndarray = "0.14"
+ndarray = { version = "0.14", optional = true }
 rand = "0.8"
+serial_test = "0.5.1"
 
 # Used for downloading dataset
-reqwest = {version = "0.10", optional = true, features = ["blocking"]}
+curl = {version = "0.4", optional = true}
+pbr = {version = "1.0", optional = true}
 # Used for extracting dataset from compressed format
 flate2 = {version = "1.0.2", optional = true, features = ["rust_backend"], default-features = false}
 tar = {version = "0.4", optional = true}
 
+[dev-dependencies]
 # Used to show datasets
-image = {version = "0.23", optional = true}
-show-image = {version = "0.6", features = ["image"], optional = true}
+image = "0.23"
+show-image = {version = "0.6", features = ["image"]}

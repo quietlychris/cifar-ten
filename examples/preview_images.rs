@@ -1,11 +1,37 @@
-#[cfg(feature = "display")]
+use cifar_ten::*;
+use ndarray::prelude::*;
+
 use image::*;
 use ndarray::prelude::*;
 use show_image::{make_window_full, Event, WindowOptions};
 use std::error::Error;
 
-/// Display an image in a stand-alone window
-#[cfg(feature = "display")]
+fn main() {
+    let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
+        .download_and_extract(true)
+        .base_path("../data")
+        .download_url("https://cmoran.xyz/data/cifar/cifar-10-binary.tar.gz")
+        .encode_one_hot(true)
+        .build()
+        .unwrap()
+        .to_ndarray::<u8>()
+        .unwrap();
+
+    let num = 30;
+    let img: Array3<u8> = train_data
+        .slice(s![num, .., .., ..])
+        .to_owned()
+        .into_shape((3, 32, 32))
+        .unwrap();
+    let label: Array1<u8> = train_labels
+        .slice(s![num, ..])
+        .to_owned()
+        .into_shape(10)
+        .unwrap();
+    println!("The image is of a: {}", return_label_from_one_hot(label));
+    display_img(&img);
+}
+
 pub fn display_img(img_arr: &Array3<u8>) -> Result<(), Box<dyn Error>> {
     let test_result_img = convert_to_image(img_arr);
 
@@ -16,7 +42,7 @@ pub fn display_img(img_arr: &Array3<u8>) -> Result<(), Box<dyn Error>> {
         preserve_aspect_ratio: true,
     };
     println!("\nPlease hit [ ESC ] to quit window:");
-    let window = make_window_full(window_options).unwrap();
+    let window = make_window_full(window_options)?;
     window.set_image(test_result_img, "test_result").unwrap();
 
     for event in window.events() {
@@ -31,10 +57,6 @@ pub fn display_img(img_arr: &Array3<u8>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// Helper function for transition from an normalized NdArray3<f32> structure to an `Image::RgbImage`
-#[cfg(feature = "display")]
-#[inline]
-#[allow(clippy::many_single_char_names)]
 fn convert_to_image(array: &Array3<u8>) -> RgbImage {
     // println!("- Converting to image!");
     let mut img: RgbImage = ImageBuffer::new(32, 32);
