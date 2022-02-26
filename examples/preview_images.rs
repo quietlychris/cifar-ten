@@ -9,8 +9,9 @@ use std::error::Error;
 fn main() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .download_and_extract(true)
-        .base_path("../data")
+        .base_path("data")
         .download_url("https://cmoran.xyz/data/cifar/cifar-10-binary.tar.gz")
+        // .download_url("https://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz")
         .encode_one_hot(true)
         .build()
         .unwrap()

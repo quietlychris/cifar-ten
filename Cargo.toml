@@ -26,9 +26,8 @@ download = ["curl", "pbr", "flate2", "tar"]
 to_ndarray = ["ndarray"]
 
 [dependencies]
-ndarray = { version = "0.14", optional = true }
+ndarray = { version = "0.15", optional = true }
 rand = "0.8"
-serial_test = "0.5.1"
 
 # Used for downloading dataset
 curl = {version = "0.4", optional = true}

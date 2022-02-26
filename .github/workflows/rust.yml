@@ -23,6 +23,6 @@ jobs:
     - name: Build with download feature
       run: cargo build --features=download,to_ndarray  
     - name: Run tests
-      run: cargo test --verbose --features=download,to_ndarray
+      run: cargo test --verbose --features=download,to_ndarray -- --test-threads=1
     - name: Build examples
       run: cargo build --examples --all --features=download,to_ndarray
