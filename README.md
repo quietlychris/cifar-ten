@@ -1,5 +1,4 @@
-[![crates.io](https://img.shields.io/crates/v/cifar-ten.svg)](https://crates.io/crates/cifar-ten)
-[![Documentation](https://docs.rs/cifar-ten/badge.svg)](https://docs.rs/cifar-ten)
+[![crates.io](https://img.shields.io/crates/v/cifar-ten.svg)](https://crates.io/crates/cifar-ten) [![Documentation](https://docs.rs/cifar-ten/badge.svg)](https://docs.rs/cifar-ten) ![CI](https://github.com/quietlychris/bissel/actions/workflows/rust.yml/badge.svg)
 
 ## cifar-ten
 
