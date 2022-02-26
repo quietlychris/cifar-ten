@@ -2,7 +2,7 @@
 
 //! This library parses the binary files of the CIFAR-10 data set and returns them as a tuple struct
 //! - `CifarResult`: `(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)` which is organized as `(train_data, train_labels, test_data, test_labels)`
-//! 
+//!
 //! Convenience methods for converting these to the Rust `ndarray` numeric arrays are provided using the `to_ndarray` feature flag, as
 //! well as for automatically downloading binary training data from a remote url.  
 //!
@@ -20,18 +20,15 @@
 //!         .expect("Failed to build CIFAR-10 data");
 //! }
 //! ```
-//! 
-//! A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). The crate's author also 
+//!
+//! A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). The crate's author also
 //! provides several ML data mirrors [here](https://cmoran.xyz/data/) which are used for running tests on this library. Please feel free to use,
 //! but should you expect to make heavy use of these files, please consider creating your own mirror.   
-//! 
+//!
 //! If you'd like to verify that the correct images and labels are being provided, the `examples/preview_images.rs` file using `show-image` to
-//! preview a RGB representation of a given image with the corresponding one-hot formatted label. 
-
+//! preview a RGB representation of a given image with the corresponding one-hot formatted label.
 
 mod test;
-#[macro_use]
-extern crate serial_test;
 
 #[cfg(feature = "to_ndarray")]
 use ndarray::prelude::*;
@@ -207,10 +204,11 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Vec<u8>, Vec<u8>), Box<d
         let base = num * (3073);
 
         let label = buffer[base];
+        // dbg!(buffer[base]);
         if label > 9 {
             panic!(
-                "Label is {}, which is inconsistent with the CIFAR-10 scheme",
-                label
+                "Image {}: Label is {}, which is inconsistent with the CIFAR-10 scheme",
+                num, label
             );
         }
 

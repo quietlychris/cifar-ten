@@ -14,7 +14,7 @@ use std::thread;
 use std::error::Error;
 use tar::Archive;
 
-const ARCHIVE: &str = "cifar-ten-binary.tar.gz";
+const ARCHIVE: &str = "cifar-10-binary.tar.gz";
 const ARCHIVE_DOWNLOAD_SIZE: usize = 170052171;
 
 pub(super) fn download_and_extract(

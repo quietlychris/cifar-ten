@@ -17,7 +17,6 @@ fn test_build_to_ndarray_f32() {
 
 #[cfg(feature = "download")]
 #[test]
-#[serial]
 fn test_download_extract_build_u8() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .download_and_extract(true)
@@ -30,7 +29,6 @@ fn test_download_extract_build_u8() {
 
 #[cfg(feature = "download")]
 #[test]
-#[serial]
 fn test_download_extract_build_f32() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .download_and_extract(true)
