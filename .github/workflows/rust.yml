@@ -16,13 +16,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install SDL2
-      run: sudo apt install libsdl2-dev
+    #- name: Install SDL2
+    #  run: sudo apt install libsdl2-dev
     - name: Build basic
       run: cargo build --features download
-    - name: Build with download feature
-      run: cargo build --features=download,to_ndarray  
-    - name: Run tests
-      run: cargo test --verbose --features=download,to_ndarray -- --test-threads=1
-    - name: Build examples
-      run: cargo build --examples --all --features=download,to_ndarray
+    - name: Build with download feature 015
+      run: cargo build --features=download,to_ndarray_015
+    - name: Build with download feature 014
+      run: cargo build --features=download,to_ndarray_014
+    - name: Build with download feature 013
+      run: cargo build --features=download,to_ndarray_013        
+    - name: Run tests 015
+      run: cargo test --verbose --features=download,to_ndarray_015 -- --test-threads=1
+    - name: Run tests 015
+      run: cargo test --verbose --features=download,to_ndarray_014-- --test-threads=1
+    - name: Run tests 013
+      run: cargo test --verbose --features=download,to_ndarray_013 -- --test-threads=1
+    - name: Build examples 015
+      run: cargo build --examples --all --features=download,to_ndarray_015
+    - name: Build examples 014
+      run: cargo build --examples --all --features=download,to_ndarray_014
+    - name: Build examples 013
+      run: cargo build --examples --all --features=download,to_ndarray_013

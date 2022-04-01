@@ -1,8 +1,19 @@
 use cifar_ten::*;
+#[cfg(feature = "to_ndarray_013")]
+use ndarray_013 as ndarray;
+#[cfg(feature = "to_ndarray_014")]
+use ndarray_014 as ndarray;
+#[cfg(feature = "to_ndarray_015")]
+use ndarray_015 as ndarray;
+
+#[cfg(any(
+    feature = "to_ndarray_015",
+    feature = "to_ndarray_014",
+    feature = "to_ndarray_013"
+))]
 use ndarray::prelude::*;
 
 use image::*;
-use ndarray::prelude::*;
 use show_image::{make_window_full, Event, WindowOptions};
 use std::error::Error;
 
@@ -18,7 +29,7 @@ fn main() {
         .to_ndarray::<u8>()
         .unwrap();
 
-    let num = 30;
+    let num: usize = 30;
     let img: Array3<u8> = train_data
         .slice(s![num, .., .., ..])
         .to_owned()
