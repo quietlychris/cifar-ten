@@ -2,27 +2,34 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master ]
   pull_request:
-    branches: [ master ]
-
-env:
-  CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  ci-linux:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      matrix:
+        # All generated code should be running on stable now
+        rust: [stable]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install SDL2
-      run: sudo apt install libsdl2-dev
-    - name: Build basic
-      run: cargo build --features download
-    - name: Build with download feature
-      run: cargo build --features=download,to_ndarray  
-    - name: Run tests
-      run: cargo test --verbose --features=download,to_ndarray -- --test-threads=1
-    - name: Build examples
-      run: cargo build --examples --all --features=download,to_ndarray
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Update
+        run: sudo apt update -y
+      - name: Install SDL2
+        run: sudo apt install libsdl2-dev -y
+      - name: Build 015
+        run: cargo build --all --features=download,to_ndarray_015
+      - name: Build 014
+        run: cargo build --all --verbose --features=download,to_ndarray_014
+      - name: Build 013
+        run: cargo build --all --features=download,to_ndarray_013
+      - name: Run tests
+        run: cargo build --examples --all --features=download,to_ndarray_015

@@ -30,8 +30,19 @@
 
 mod test;
 
-#[cfg(feature = "to_ndarray")]
-use ndarray::prelude::*;
+#[cfg(any(
+    feature = "to_ndarray_015",
+    feature = "to_ndarray_014",
+    feature = "to_ndarray_013"
+))]
+pub(self) use ndarray::prelude::*;
+
+#[cfg(feature = "to_ndarray_013")]
+use ndarray_013 as ndarray;
+#[cfg(feature = "to_ndarray_014")]
+use ndarray_014 as ndarray;
+#[cfg(feature = "to_ndarray_015")]
+use ndarray_015 as ndarray;
 
 use std::error::Error;
 use std::io::Read;
@@ -224,7 +235,11 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Vec<u8>, Vec<u8>), Box<d
 }
 
 impl CifarResult {
-    #[cfg(feature = "to_ndarray")]
+    #[cfg(any(
+        feature = "to_ndarray_015",
+        feature = "to_ndarray_014",
+        feature = "to_ndarray_013"
+    ))]
     pub fn to_ndarray<T: std::convert::From<u8>>(
         self,
     ) -> Result<(Array4<T>, Array2<T>, Array4<T>, Array2<T>), Box<dyn Error>> {
@@ -241,7 +256,11 @@ impl CifarResult {
     }
 }
 
-#[cfg(feature = "to_ndarray")]
+#[cfg(any(
+    feature = "to_ndarray_015",
+    feature = "to_ndarray_014",
+    feature = "to_ndarray_013"
+))]
 pub fn return_label_from_one_hot(one_hot: Array1<u8>) -> String {
     if one_hot == array![1, 0, 0, 0, 0, 0, 0, 0, 0, 0] {
         "airplane".to_string()
