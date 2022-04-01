@@ -5,10 +5,11 @@
 This library parses the binary files of the CIFAR-10 data set and returns them as a tuple struct
 - `CifarResult`: `(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)` which is organized as `(train_data, train_labels, test_data, test_labels)`
 
-Convenience methods for converting these to the Rust `ndarray` numeric arrays are provided using the `to_ndarray` feature flag, as
-well as for automatically downloading binary training data from a remote url.  
+Convenience methods for converting these to the Rust `ndarray` numeric arrays are provided using the `to_ndarray_0xx` feature flag, as
+well as for automatically downloading binary training data from a remote url. 
+
 ```rust
-// $ cargo build --features=download,to_ndarray
+// $ cargo build --features=download,to_ndarray_015
 use cifar_ten::*;
 
 fn main() {
@@ -21,7 +22,16 @@ fn main() {
         .expect("Failed to build CIFAR-10 data");
 }
 ```
- 
+
+Various `ndarray` versions can be used with the following feature flags:
+
+version | feature flag
+---|---
+`0.15` | `to_ndarray_015`
+`0.14` | `to_ndarray_014`
+`0.13` | `to_ndarray_013`
+
+
 A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). The crate's author also 
 provides several ML data mirrors [here](https://cmoran.xyz/data/) which are used for running tests on this library. Please feel free to use,
 but should you expect to make heavy use of these files, please consider creating your own mirror.   
