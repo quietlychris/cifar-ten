@@ -28,7 +28,7 @@ jobs:
       run: cargo build --features=download,to_ndarray_013        
     - name: Run tests 015
       run: cargo test --verbose --features=download,to_ndarray_015 -- --test-threads=1
-    - name: Run tests 015
+    - name: Run tests 014
       run: cargo test --verbose --features=download,to_ndarray_014-- --test-threads=1
     - name: Run tests 013
       run: cargo test --verbose --features=download,to_ndarray_013 -- --test-threads=1
