@@ -1,47 +1,35 @@
-name: Rust
-
 on:
   push:
-    branches: [ master ]
+    branches: [master ]
   pull_request:
-    branches: [ master ]
 
-env:
-  CARGO_TERM_COLOR: always
+name: cifar-ten
 
 jobs:
-  build:
-
+  ci-linux:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental || false }}
+    strategy:
+      matrix:
+        # All generated code should be running on stable now
+        rust: [stable]
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Install SDL2
-      run: sudo apt install libsdl2-dev
-    - name: Build basic
-      run: cargo build --features download
-    - name: Build with download feature 015
-      run: cargo build --features=download,to_ndarray_015
-    - name: Build with download feature 014
-      run: cargo build --features=download,to_ndarray_014
-    - name: Build with download feature 013
-      run: cargo build --features=download,to_ndarray_013        
-    - name: Build examples 015
-      run: cargo build --examples --all --features=download,to_ndarray_015
-    - name: Build examples 014
-      run: cargo build --examples --all --features=download,to_ndarray_014
-    - name: Build examples 013
-      run: cargo build --examples --all --features=download,to_ndarray_013
-  
-  test:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    -uses: actions/checkout@v2
-    - name: Run tests 015
-      run: cargo test --verbose --features=download,to_ndarray_015 -- --test-threads=1
-    - name: Run tests 014
-      run: cargo test --verbose --features=download,to_ndarray_014 -- --test-threads=1
-    - name: Run tests 013
-      run: cargo test --verbose --features=download,to_ndarray_013 -- --test-threads=1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Update
+        run: sudo apt update -y
+      - name: Install SDL2
+        run: sudo apt install libsdl2-dev -y
+      - name: Build 015
+        run: cargo build --all --features=download,to_ndarray_015
+      - name: Build 014
+        run: cargo build --all --verbose --features=download,to_ndarray_014
+      - name: Build 013
+        run: cargo build --all --features=download,to_ndarray_013
+      - name: Run tests
+        run: cargo build --examples --all --features=download,to_ndarray_015

@@ -37,12 +37,12 @@ mod test;
 ))]
 pub(self) use ndarray::prelude::*;
 
-#[cfg(feature = "to_ndarray_015")]
-use ndarray_015 as ndarray;
-#[cfg(feature = "to_ndarray_014")]
-use ndarray_014 as ndarray;
 #[cfg(feature = "to_ndarray_013")]
 use ndarray_013 as ndarray;
+#[cfg(feature = "to_ndarray_014")]
+use ndarray_014 as ndarray;
+#[cfg(feature = "to_ndarray_015")]
+use ndarray_015 as ndarray;
 
 use std::error::Error;
 use std::io::Read;
