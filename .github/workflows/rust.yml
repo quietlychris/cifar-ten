@@ -1,9 +1,9 @@
+name: CI
+
 on:
   push:
     branches: [master ]
   pull_request:
-
-name: cifar-ten
 
 jobs:
   ci-linux:
