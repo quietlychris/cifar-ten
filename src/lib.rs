@@ -59,7 +59,7 @@ use std::fs::File;
 use tar::Archive;
 
 /// Primary data return, wrapper around tuple `(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)`
-pub struct CifarResult(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>);
+pub struct CifarResult(pub Vec<u8>, pub Vec<u8>, pub Vec<u8>, pub Vec<u8>);
 
 /// Data structure used to specify where/how the CIFAR-10 binary data is parsed
 #[derive(Debug)]
