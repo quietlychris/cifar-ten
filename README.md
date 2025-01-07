@@ -27,6 +27,7 @@ Various `ndarray` versions can be used with the following feature flags:
 
 version | feature flag
 ---|---
+`0.16` | `to_ndarray_016`
 `0.15` | `to_ndarray_015`
 `0.14` | `to_ndarray_014`
 `0.13` | `to_ndarray_013`
