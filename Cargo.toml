@@ -1,6 +1,6 @@
 [package]
 name = "cifar-ten"
-version = "0.5.1"
+version = "0.6.0"
 authors = [
     "Christopher Moran <christopher.and.moran@gmail.com>",
     "Manuel Drehwald"
@@ -23,11 +23,13 @@ name = "cifar_ten"
 [features]
 default = []
 download = ["curl", "pbr", "flate2", "tar"]
+to_ndarray_016 = ["ndarray_016"]
 to_ndarray_015 = ["ndarray_015"]
 to_ndarray_014 = ["ndarray_014"]
 to_ndarray_013 = ["ndarray_013"]
 
 [dependencies]
+ndarray_016 = { package = "ndarray", version = "0.16", optional = true }
 ndarray_015 = { package = "ndarray", version = "0.15", optional = true }
 ndarray_014 = { package = "ndarray", version = "0.14", optional = true }
 ndarray_013 = { package = "ndarray", version = "0.13.1", optional = true }
