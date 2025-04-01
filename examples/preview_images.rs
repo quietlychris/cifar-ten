@@ -5,8 +5,11 @@ use ndarray_013 as ndarray;
 use ndarray_014 as ndarray;
 #[cfg(feature = "to_ndarray_015")]
 use ndarray_015 as ndarray;
+#[cfg(feature = "to_ndarray_016")]
+use ndarray_016 as ndarray;
 
 #[cfg(any(
+    feature = "to_ndarray_016",
     feature = "to_ndarray_015",
     feature = "to_ndarray_014",
     feature = "to_ndarray_013"
@@ -14,9 +17,15 @@ use ndarray_015 as ndarray;
 use ndarray::prelude::*;
 
 use image::*;
-use show_image::{make_window_full, Event, WindowOptions};
+use show_image::{
+    create_window,
+    event::{WindowEvent, WindowKeyboardInputEvent},
+    glam::UVec2,
+    BoxImage, ImageInfo, WindowOptions,
+};
 use std::error::Error;
 
+#[show_image::main]
 fn main() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
         .download_and_extract(true)
@@ -47,25 +56,32 @@ fn main() {
 pub fn display_img(img_arr: &Array3<u8>) -> Result<(), Box<dyn Error>> {
     let test_result_img = convert_to_image(img_arr);
 
+    // let boxed_image = BoxImage::new(
+    //     ImageInfo {
+    //         pixel_format: show_image::PixelFormat::Rgb8,
+    //         size: UVec2::new(32, 32),
+    //         strides: UVec2::new(3, 3 * 32),
+    //     },
+    //     img_arr,
+    // );
+
     let window_options = WindowOptions {
-        name: "image".to_string(),
-        size: [100, 100],
         resizable: true,
         preserve_aspect_ratio: true,
+        ..WindowOptions::default()
     };
     println!("\nPlease hit [ ESC ] to quit window:");
-    let window = make_window_full(window_options)?;
-    window.set_image(test_result_img, "test_result").unwrap();
+    let window = create_window("cifar-10", Default::default())?;
+    window.set_image("test_result", test_result_img).unwrap();
 
-    for event in window.events() {
-        if let Event::KeyboardEvent(event) = event {
-            if event.key == show_image::KeyCode::Escape {
+    for event in window.event_channel()? {
+        if let WindowEvent::KeyboardInput(WindowKeyboardInputEvent { input, .. }) = event {
+            if input.key_code == Some(show_image::event::VirtualKeyCode::Escape) {
                 break;
             }
         }
     }
 
-    show_image::stop()?;
     Ok(())
 }
 

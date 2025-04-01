@@ -9,7 +9,7 @@ Convenience methods for converting these to the Rust `ndarray` numeric arrays ar
 well as for automatically downloading binary training data from a remote url. 
 
 ```rust
-// $ cargo build --features=download,to_ndarray_015
+// $ cargo build --features=download,to_ndarray_016
 use cifar_ten::*;
 
 fn main() {
