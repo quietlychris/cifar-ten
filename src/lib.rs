@@ -7,7 +7,7 @@
 //! well as for automatically downloading binary training data from a remote url.  
 //!
 //! ```rust
-//! // $ cargo build --features=download,to_ndarray
+//! // $ cargo build --features=download,to_ndarray_016
 //! use cifar_ten::*;
 //!
 //! fn main() {
@@ -31,6 +31,7 @@
 mod test;
 
 #[cfg(any(
+    feature = "to_ndarray_016",
     feature = "to_ndarray_015",
     feature = "to_ndarray_014",
     feature = "to_ndarray_013"
@@ -43,6 +44,8 @@ use ndarray_013 as ndarray;
 use ndarray_014 as ndarray;
 #[cfg(feature = "to_ndarray_015")]
 use ndarray_015 as ndarray;
+#[cfg(feature = "to_ndarray_016")]
+use ndarray_016 as ndarray;
 
 use std::error::Error;
 use std::io::Read;
@@ -236,6 +239,7 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Vec<u8>, Vec<u8>), Box<d
 
 impl CifarResult {
     #[cfg(any(
+        feature = "to_ndarray_016",
         feature = "to_ndarray_015",
         feature = "to_ndarray_014",
         feature = "to_ndarray_013"
@@ -257,6 +261,7 @@ impl CifarResult {
 }
 
 #[cfg(any(
+    feature = "to_ndarray_016",
     feature = "to_ndarray_015",
     feature = "to_ndarray_014",
     feature = "to_ndarray_013"

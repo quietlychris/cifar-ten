@@ -44,5 +44,5 @@ tar = {version = "0.4", optional = true}
 
 [dev-dependencies]
 # Used to show datasets
-image = "0.23"
-show-image = {version = "0.6", features = ["image"]}
+image = "0.25"
+show-image = {version = "=0.14.0", features = ["image"]}
