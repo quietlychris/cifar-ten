@@ -6,21 +6,24 @@
 //! Convenience methods for converting these to the Rust `ndarray` numeric arrays are provided using the `to_ndarray` feature flag, as
 //! well as for automatically downloading binary training data from a remote url.  
 //!
-//! ```rust
-//! // $ cargo build --features=download,to_ndarray_016
-//! use cifar_ten::*;
-//!
-//! fn main() {
-//!     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
-//!         .download_and_extract(true)
-//!         .encode_one_hot(true)
-//!         .build()
-//!         .unwrap()
-//!         .to_ndarray::<f32>()
-//!         .expect("Failed to build CIFAR-10 data");
-//! }
-//! ```
-//!
+#![cfg_attr(
+    all(feature = "download", feature = "to_ndarray_016"),
+    doc = r##"
+```rust
+use cifar_ten::*;
+
+fn main() {
+    let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
+        .download_and_extract(true)
+        .encode_one_hot(true)
+        .build()
+        .unwrap()
+        .to_ndarray::<f32>()
+        .expect("Failed to build CIFAR-10 data");
+}
+```
+"##
+)]
 //! A `tar.gz` file with the original binaries can be found [here](https://www.cs.toronto.edu/~kriz/cifar.html). The crate's author also
 //! provides several ML data mirrors [here](https://cmoran.xyz/data/) which are used for running tests on this library. Please feel free to use,
 //! but should you expect to make heavy use of these files, please consider creating your own mirror.   
@@ -158,7 +161,7 @@ impl Cifar10 {
         self
     }
 
-    /// Returns the array tuple using the specified options in Array4<T> form
+    /// Returns the array tuple using the specified options in `Array4<T>` form
     pub fn build(self) -> Result<CifarResult, Box<dyn Error>> {
         #[cfg(feature = "download")]
         match self.download_and_extract {
@@ -189,11 +192,16 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Vec<u8>, Vec<u8>), Box<d
     };
 
     for bin in &bin_paths {
-        // let full_cifar_path = [config.base_path, config.cifar_data_path, bin.into()].join("");
+        // let full_cifar_path = [
+        //     config.base_path.to_owned(),
+        //     config.cifar_data_path.to_owned(),
+        //     bin.into(),
+        // ]
+        // .join("");
         let full_cifar_path = Path::new(&config.base_path)
             .join(&config.cifar_data_path)
             .join(bin);
-        // println!("{}", full_cifar_path);
+        // println!("{}", full_cifar_path.display());
 
         let mut f = std::fs::File::open(full_cifar_path)?;
 
@@ -201,10 +209,10 @@ fn get_data(config: &Cifar10, dataset: &str) -> Result<(Vec<u8>, Vec<u8>), Box<d
         let mut temp_buffer: Vec<u8> = Vec::new();
         f.read_to_end(&mut temp_buffer)?;
         buffer.extend(&temp_buffer);
-        //println!(
-        //    "{}",
-        //    format!("- Done parsing binary file {} to Vec<u8>", bin).as_str()
-        //);
+        // println!(
+        //     "{}",
+        //     format!("- Done parsing binary file {} to Vec<u8>", bin).as_str()
+        // );
     }
 
     let mut labels: Vec<u8> = match config.encode_one_hot {

@@ -22,7 +22,7 @@ name = "cifar_ten"
 
 [features]
 default = []
-download = ["curl", "pbr", "flate2", "tar"]
+download = ["curl", "pbr", "flate2", "tar", "filesize", "dir-lock"]
 to_ndarray_016 = ["ndarray_016"]
 to_ndarray_015 = ["ndarray_015"]
 to_ndarray_014 = ["ndarray_014"]
@@ -34,6 +34,7 @@ ndarray_015 = { package = "ndarray", version = "0.15", optional = true }
 ndarray_014 = { package = "ndarray", version = "0.14", optional = true }
 ndarray_013 = { package = "ndarray", version = "0.13.1", optional = true }
 rand = "0.8"
+filesize = { version = "0.2", optional = true }
 
 # Used for downloading dataset
 curl = {version = "0.4", optional = true}
@@ -41,8 +42,16 @@ pbr = {version = "1.0", optional = true}
 # Used for extracting dataset from compressed format
 flate2 = {version = "1.0.2", optional = true, features = ["rust_backend"], default-features = false}
 tar = {version = "0.4", optional = true}
+dir-lock = { version = "0.4", optional = true }
 
 [dev-dependencies]
 # Used to show datasets
 image = "0.25"
 show-image = {version = "=0.14.0", features = ["image"]}
+
+[package.metadata.docs.rs]
+features = ["download", "to_ndarray_016"]
+
+[[example]]
+name = "preview_images"
+required-features = ["to_ndarray_016"]

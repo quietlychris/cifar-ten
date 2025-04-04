@@ -1,17 +1,15 @@
-#![cfg(feature = "download")]
-
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-use std::{fs, io};
-
 use curl::easy::Easy;
-use std::fs::File;
-
+use dir_lock::DirLock;
+use filesize::PathExt;
 use pbr::ProgressBar;
 use std::convert::TryInto;
-use std::thread;
-
 use std::error::Error;
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::thread;
+use std::time::Duration;
 use tar::Archive;
 
 const ARCHIVE: &str = "cifar-10-binary.tar.gz";
@@ -29,6 +27,7 @@ pub(super) fn download_and_extract(
         );
         fs::create_dir_all(&download_dir)?;
     }
+    let _dir_lock = DirLock::new(&download_dir);
     println!("Attempting to download and extract {}...", ARCHIVE);
     download(download_url, &download_dir)?;
     extract(&ARCHIVE, &download_dir)?;
@@ -54,37 +53,33 @@ fn download(url: String, download_dir: impl Into<PathBuf>) -> Result<(), Box<dyn
 
         let mut file = File::create(file_name.clone()).unwrap();
 
-        let pb = match cfg!(unix) {
-            true => {
-                use std::os::unix::fs::MetadataExt;
-                let full_size = ARCHIVE_DOWNLOAD_SIZE;
+        let full_size = ARCHIVE_DOWNLOAD_SIZE;
 
-                let pb_thread = thread::spawn(move || {
-                    let mut pb = ProgressBar::new(full_size.try_into().unwrap());
-                    pb.format("╢=> ╟");
+        let pb_thread = thread::spawn(move || {
+            let mut pb = ProgressBar::new(full_size.try_into().unwrap());
+            pb.format("╢=> ╟");
 
-                    let mut current_size = 0;
-                    while current_size < full_size {
-                        let meta = fs::metadata(file_name.clone())
-                            .expect(&format!("Couldn't get metadata on {:?}", file_name));
-                        current_size = meta.size() as usize;
-                        pb.set(current_size.try_into().unwrap());
-                        thread::sleep_ms(10);
-                    }
-                    pb.finish_println(" ");
-                });
-
-                easy.url(&url).unwrap();
-                easy.write_function(move |data| {
-                    file.write_all(data).unwrap();
-                    Ok(data.len())
-                })
-                .unwrap();
-                easy.perform().unwrap();
-                pb_thread.join().unwrap();
+            let mut current_size = 0;
+            while current_size < full_size {
+                current_size = file_name
+                    .size_on_disk()
+                    .expect(&format!("Couldn't get metadata on {:?}", file_name))
+                    as usize;
+                pb.set(current_size.try_into().unwrap());
+                thread::sleep(Duration::from_millis(10));
             }
-            _ => (),
-        };
+            pb.finish_println(" ");
+        });
+
+        easy.url(&url).unwrap();
+        easy.write_function(move |data| {
+            file.write_all(data).unwrap();
+            Ok(data.len())
+        })
+        .unwrap();
+        easy.perform().unwrap();
+
+        pb_thread.join().unwrap();
     }
 
     Ok(())

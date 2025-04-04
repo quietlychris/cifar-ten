@@ -8,14 +8,14 @@ fn test_build() {
     let result = Cifar10::default().build().unwrap();
 }
 
-#[cfg(not(feature = "download"))]
-#[cfg(feature = "to_ndarray")]
+#[cfg(all(not(feature = "download"), feature = "to_ndarray_016"))]
+#[cfg(feature = "to_ndarray_016")]
 #[test]
 fn test_build_to_ndarray_f32() {
     let result = Cifar10::default().build().unwrap().to_ndarray::<f32>();
 }
 
-#[cfg(feature = "download")]
+#[cfg(all(feature = "download", feature = "to_ndarray_016"))]
 #[test]
 fn test_download_extract_build_u8() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
@@ -27,7 +27,7 @@ fn test_download_extract_build_u8() {
         .unwrap();
 }
 
-#[cfg(feature = "download")]
+#[cfg(all(feature = "download", feature = "to_ndarray_016"))]
 #[test]
 fn test_download_extract_build_f32() {
     let (train_data, train_labels, test_data, test_labels) = Cifar10::default()
